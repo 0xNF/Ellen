@@ -13,6 +13,7 @@ For use with `libellenxls`, ensure that the following two libraries are installe
 ```bash
 pip install pillow
 pip install openpyxl
+pip install flask
 ```
 
 | Becuase we rely on some private methods to better manipulate Image positions, please use `openpyxl version 3.0.4`. 

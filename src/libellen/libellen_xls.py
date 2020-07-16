@@ -79,6 +79,11 @@ def _pixel_to_point(px: int) -> int:
     """ converts a pixel to an excel point """
     return px * 72 / 96
 
+def _get_image_path(img: GImage, gid: str) -> str:
+    """ returns the path on disk for where to save a GImage """
+    return  os.path.join(CONFIG.SAVE_PATH, "img", f"{gid}.{img.Ext.lower()}")
+
+
 def _dump_and_resize_image(path: str, b64: str, square_size_px: int) -> Image:
     """ takes b64 encoded image data, and saves it to disk in the square dimensions supplied. Returns an openpyxl Image """
     dump_b64_img_to_file(img.B64, path)
@@ -88,7 +93,7 @@ def _dump_and_resize_image(path: str, b64: str, square_size_px: int) -> Image:
 
 def _dump_and_resize_image(img: GImage, gid: str, square_size_px: int) -> Image:
     """ takes b64 encoded image data, and saves it to disk in the square dimensions supplied. Returns an openpyxl Image """
-    path = os.path.join(CONFIG.SAVE_PATH, "img", f"{gid}.{img.Ext.lower()}")
+    path = _get_image_path(GImage, gid)
     dump_b64_img_to_file(img.B64, path)
     resize_image(path, IMAGE_HEIGHT)
     eimg: Image = Image(path)
@@ -124,6 +129,17 @@ def _img_anchor_to_coordinate(img: Image) -> str:
     real_anchor = f"{anc_col}{ianch.row+1}" # internal field is 0-indexed
     return real_anchor
 
+def _clean_image(img: GImage, gid: str):
+    """ removes the downloaded GImage. Its only use was to be added to the excel sheet """
+    if img is not None:
+        path = _get_image_path(GImage, gid)
+        try:
+            os.remove(path)
+        except:
+            return
+    return
+
+
 def update_bap(candidates: List[Candidate]):
     """ given a list of potential candidate matches, update the bap sheet to ensure that any new known people are properly inserted"""
     _open_workbook()
@@ -138,7 +154,6 @@ def update_bap(candidates: List[Candidate]):
             sheet.append((c.Id, c.DisplayName))
     _save_workbook()
     return
-
 
 def update_ivar(gorillaId: str, timestamp: datetime, eventType: str, img: GImage, candidate: Candidate, jobj: str):
     """ Inserts data into the Ivar entries sheet. """
@@ -157,6 +172,7 @@ def update_ivar(gorillaId: str, timestamp: datetime, eventType: str, img: GImage
     sheet.row_dimensions[rc].height = _pixel_to_point(IMAGE_HEIGHT) # set all row heights to be the image height
 
     _save_workbook()
+    _clean_image(eimg) # remove any saved images, because once their written to the worksheet, they're stored inside the xls file
     return
 
 def ensure() -> bool:

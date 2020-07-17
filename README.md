@@ -64,5 +64,9 @@ This config can be reloaded at any time with the `/reload` endpoint.
     - GET
     - Reloads the config at `./config.ini` without requiring a server restart
 
+## Todo
 - nice-to-have:
-    - wtf is going on with python module imports, holy fuck fix it later
+    - wtf is going on with python module imports?
+    - cleanup old methods
+    - make better installation method
+    

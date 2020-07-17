@@ -28,6 +28,8 @@ pip install openpyxl
 pip install flask
 ```
 
+| Becuase we rely on some private methods to better manipulate Image positions, please use `openpyxl version 3.0.4`. 
+
 # Usage - Server
 Start:
 ```bash
@@ -61,8 +63,6 @@ This config can be reloaded at any time with the `/reload` endpoint.
 * /reload
     - GET
     - Reloads the config at `./config.ini` without requiring a server restart
-
-| Becuase we rely on some private methods to better manipulate Image positions, please use `openpyxl version 3.0.4`. 
 
 - nice-to-have:
     - wtf is going on with python module imports, holy fuck fix it later

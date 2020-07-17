@@ -4,6 +4,18 @@ This project is a webserver that receives events from Gorilla IVAR into a Sqlite
 
 Because we are saving Gorilla data, the namesake is from The Ellen Fund, whose mission is to save real-life gorillas.
 
+# Quick Install
+1. Install Python3.8 from the [Windows Store](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab)
+1. Download the zip `ellen.zip`
+1. extract anywhere
+1. open `ellen/`
+1. run `install.bat`
+1. optional auto-start:  
+    1. make a shortcut to `ellen_windows_store.bat`
+    1. move the shortcut to `shell:startup`
+1. run `ellen_windows_store.bat`
+
+
 # Installation via Binaries
 Download the packaged Windows Binary here
 

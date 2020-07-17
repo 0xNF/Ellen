@@ -190,6 +190,7 @@ def set_config(config: Config):
 def prune_old_data() -> int:
     """ removes old data according to the Config Rules. 
     Returns the number of rows deleted. """
+    _ensure_workbook()
     _open_workbook()
     sheet = WORKBOOK.get_sheet_by_name(SHEET_IVAR)
     rowcount = sheet.max_row

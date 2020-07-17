@@ -2,6 +2,9 @@ import sys
 from flask import Flask, session, request
 import json
 from lib import libellen
+from datetime import datetime, timedelta
+
+last_ran = datetime.now()
 
 app = Flask(__name__)
 
@@ -43,6 +46,10 @@ setup()
 @app.route('/savegorilla', methods=["POST"])
 def save_gorilla():
     """ receives gorilla formatted data, and if valid, saves to the backing store """
+    if (datetime.now() - timedelta(hours=1)) >= last_ran:
+        print("checking for old records in storage file")
+        libellen.prune()
+        last_ran = datetime.now()
     j = request.json
     res = {}
     if not validate_format(j):

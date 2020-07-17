@@ -151,7 +151,7 @@ def update_bap(candidates: List[Candidate]):
     for c in candidates:
         should_add = True
         for row in sheet.iter_rows():
-            if row[0].value is c.Id:
+            if row[0].value == c.Id:
                 should_add = False
                 break
         if should_add:

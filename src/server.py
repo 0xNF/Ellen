@@ -46,6 +46,7 @@ setup()
 @app.route('/savegorilla', methods=["POST"])
 def save_gorilla():
     """ receives gorilla formatted data, and if valid, saves to the backing store """
+    global last_ran
     if (datetime.now() - timedelta(hours=1)) >= last_ran:
         print("checking for old records in storage file")
         libellen.prune()

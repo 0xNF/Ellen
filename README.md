@@ -18,12 +18,14 @@ pip install flask
 
 | Becuase we rely on some private methods to better manipulate Image positions, please use `openpyxl version 3.0.4`. 
 # TODO
-- Prune XLS data
-    - delete old images
-    - move image anchor
 - Better File configuration
     - config.ini  
         max_save_days=2  
         etc...
 - Ellen_Server
     - receive Gorilla Post
+    - load libellen properly
+- packaging
+    - py2exe
+- nice-to-have:
+    - wtf is going on with python module imports, holy fuck fix it later

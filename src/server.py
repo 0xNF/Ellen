@@ -7,12 +7,17 @@ app = Flask(__name__)
 
 def setup():
     """ initializes Ellen by grabbing configs and ensuring initial files """
-    if not libellen.read_config():
+    conf = libellen.read_config()
+    if not conf:
         libellen.write_default_config()
-        if not libellen.read_config():
+        conf = libellen.read_config()
+        if conf:
+            print("Failed to load config.ini, shutting down")
             sys.exit(-1)
     libellen.SetActiveStore(libellen.KIND)
     libellen.InitBackingStore()
+    print("Using the following config settings:")
+    print(conf.__dict__)
     return
 
 def validate_format(obj) -> bool:
@@ -52,13 +57,23 @@ def save_gorilla():
         return res, 200
     except FileNotFoundError as e:
         res["error"] = str(e)
-        return res, 500
+        return res, 501
     except RuntimeError as e:
         res["error"] = str(e)
-        return res, 500
+        return res, 502
     except Exception as e:
         res["error"] = str(e)
-        return res, 500
+        return res, 503
+
+
+@app.route('/reload', methods=["GET"])
+def relod():
+    """ re-reads the config.ini and reloads its settings """
+    try:
+        setup()
+        return {"message": "reloaded config options"}
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/healthcheck', methods=["GET"])
 def healthcheck():

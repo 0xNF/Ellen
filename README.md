@@ -1,8 +1,8 @@
 # Ellen
 
-This project is a webserver that receives events from Gorilla IVAR into a Sqlite Database.
+This project is a webserver that receives events from Gorilla IVAR into either an `.xlsx` excel file or a `.sqlite` Sqlite Database.
 
-Because we are saving Gorilla data, the namesake is from The Ellen Fund, whose mission is to save real-life gorillas.
+Because we are saving Gorilla data, the namesake is from [The Ellen Fund](https://theellenfund.org/gorillas), whose mission is to save real-life gorillas.
 
 # Quick Install
 1. Install Python3.8 from the [Windows Store](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab)

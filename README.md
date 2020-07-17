@@ -16,9 +16,6 @@ Because we are saving Gorilla data, the namesake is from The Ellen Fund, whose m
 1. run `ellen_windows_store.bat`
 
 
-# Installation via Binaries
-Download the packaged Windows Binary here
-
 # Installation via Source
 
 For use with `libellenxls`, ensure that the following two libraries are installed:
@@ -34,7 +31,7 @@ pip install flask
 # Usage - Server
 Start:
 ```bash
-./ellen.py
+./src/server.py
 ```
 
 # Configuration
@@ -66,8 +63,6 @@ This config can be reloaded at any time with the `/reload` endpoint.
     - Reloads the config at `./config.ini` without requiring a server restart
 
 | Becuase we rely on some private methods to better manipulate Image positions, please use `openpyxl version 3.0.4`. 
-# TODO
-- packaging
-    - py2exe
+
 - nice-to-have:
     - wtf is going on with python module imports, holy fuck fix it later

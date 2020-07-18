@@ -15,6 +15,21 @@ Because we are saving Gorilla data, the namesake is from [The Ellen Fund](https:
     1. move the shortcut to `shell:startup`
 1. run `ellen_windows_store.bat`
 
+# build a single-file-exe
+We use Pyinstaller. It cannot be used with Windows Store python due to permission errors to the AppData folder.
+
+This process was tested eith Windows python `Python 3.8.4`.
+```
+pip install pyinstaller
+```
+build single file exe:
+we take `$ellen_source` to be the top-level ellen directory.
+```
+cd $ellen_source
+pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib"
+```
+omitting the `--hidden-import` flag will cause errors.
+
 
 # Installation via Source
 

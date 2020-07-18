@@ -5,7 +5,6 @@ from lib import libellen
 from datetime import datetime, timedelta
 
 last_ran = datetime.now()
-
 app = Flask(__name__)
 
 def setup():
@@ -41,7 +40,6 @@ def validate_format(obj) -> bool:
         return False
     return True
 
-setup()
 
 @app.route('/savegorilla', methods=["POST"])
 def save_gorilla():
@@ -86,6 +84,8 @@ def relod():
 @app.route('/healthcheck', methods=["GET"])
 def healthcheck():
     return 'Ellen is Running'
+
+setup()
 
 if __name__ == "__main__":
     app.run()

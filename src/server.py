@@ -14,7 +14,7 @@ def setup():
     if not conf:
         libellen.write_default_config()
         conf = libellen.read_config()
-        if conf:
+        if not conf:
             print("Failed to load config.ini, shutting down")
             sys.exit(-1)
     libellen.SetActiveStore(libellen.KIND)

@@ -16,9 +16,9 @@ Because we are saving Gorilla data, the namesake is from [The Ellen Fund](https:
 1. run `ellen_windows_store.bat`
 
 # build a single-file-exe
-We use Pyinstaller. It cannot be used with Windows Store python due to permission errors to the AppData folder.
+We use [Pyinstaller](https://www.pyinstaller.org/). It cannot be used with Windows Store python due to permission errors to the AppData folder.
 
-This process was tested eith Windows python `Python 3.8.4`.
+This process was tested with Windows python `Python 3.8.4`.
 ```
 pip install pyinstaller
 ```

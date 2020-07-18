@@ -42,7 +42,7 @@ The configuration has the following options available:
 ```
 maxkeepdays = 30        // Maximum number of days back to keep recorded data
 maxrecordcount = 10000  // Maximum number of records to keep
-maxdbsize = 100         // Maximum size of the storage file
+maxdbsize = 100         // Maximum size of the storage file in MB
 storeimagekind = FACE   // Type of Gorilla Image data to save [FACE, OBJECT, SCENE]
 storeimage = True       // Whether to store Gorilla Image data at all [True, False]
 storefulljson = False   // Whether to store the entire Gorilla Data Object [True, False]

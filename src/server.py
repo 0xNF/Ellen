@@ -86,3 +86,6 @@ def relod():
 @app.route('/healthcheck', methods=["GET"])
 def healthcheck():
     return 'Ellen is Running'
+
+if __name__ == "__main__":
+    app.run()

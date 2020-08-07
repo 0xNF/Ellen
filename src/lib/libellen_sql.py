@@ -6,26 +6,27 @@ from datetime import datetime, time, timedelta
 from .libellen_core import Config, Candidate, GImage
 ## Configuration Data related to Ellen's functioning
 # Path to the Database where we store our seen items
-DBPath = "./ellen.sqlite"
+_DBNAME = "ellen.sqlite"
 
 # Private Connection to the Database - we keep it open whenever we can
 _CONN: sqlite3.Connection = None
 CONFIG: Config = None
 
-# def _open_conn() -> bool:
-#     """Opens the connection to the database, and stores it in _CONN. Returns whether the connection was successful"""
-#     global _CONN
-#     if _CONN is None:
-#         _CONN = sqlite3.connect(DBPath)
-#         return _CONN is not None
-#     return True
+def _getDBPath() -> str:
+    if CONFIG is None:
+        return  os.path.join(".", _DBNAME)
+    else:
+        return os.path.join(CONFIG.OUTPUT_PATH, _DBNAME)
 
 def _open_conn() -> sqlite3.Connection:
-    return sqlite3.connect(DBPath)
+    dbpath = _getDBPath()
+    p = os.path.dirname(dbpath)
+    os.makedirs(p, exist_ok=True)
+    return sqlite3.connect(dbpath)
 
 def _check_db_exists() -> bool:
     """Checks that the Sqlite DB exits"""
-    if not os.path.isfile(DBPath):
+    if not os.path.isfile(_getDBPath()):
         return False
     try:
         return _open_conn() is not None
@@ -35,14 +36,15 @@ def _check_db_exists() -> bool:
 
 def _remove_old_db() -> None:
     """removes any invalid or corrupt db file we had for whatever reason. """
+    dbpath = _getDBPath()
     try:
-        print(f"Removing old db at {DBPath}")
-        os.remove(DBPath)
+        print(f"Removing old db at {dbpath}")
+        os.remove(dbpath)
         return
     except FileNotFoundError:
         return
     except Exception as e:
-        print(f"Failed to remove file at: {DBPath}: {e}")
+        print(f"Failed to remove file at: {dbpath}: {e}")
         raise e
 
 def _establish_new_db() -> bool:
@@ -143,7 +145,7 @@ def update_ivar(gorillaId: str, timestamp: datetime, eventType: str, img: GImage
 
 def main():
     print("lib_elen_SQL:")
-    print(f"Checking {DBPath} exists: {_check_db_exists()}")
+    print(f"Checking {_getDBPath()} exists: {_check_db_exists()}")
     print("Ensuring DB creation...")
     _ensure_db()
     print("Pruning old data")

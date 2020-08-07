@@ -8,11 +8,17 @@ from openpyxl.drawing.image import Image
 from .libellen_core import Config, Candidate, GImage, dump_b64_img_to_file, resize_image
 
 CONFIG: Config = None
-XLSPATH: str = "./ellen.xlsx"
+_XLSNAME: str = "ellen.xlsx"
 WORKBOOK: openpyxl.Workbook = None
 SHEET_BAP = "People"
 SHEET_IVAR = "Entries"
 IMAGE_HEIGHT = 64
+
+def _getXLSPath() -> str:
+    if CONFIG is None:
+        return  os.path.join(".", _XLSNAME)
+    else:
+        return os.path.join(CONFIG.OUTPUT_PATH, _XLSNAME)
 
 def _open_workbook() -> bool:
     """Opens the workbook - returns true if loading was successful
@@ -21,8 +27,11 @@ def _open_workbook() -> bool:
     global WORKBOOK
     if WORKBOOK is not None:
         return True # already loaded, therefore true
+    xlsPath = _getXLSPath()
+    p = os.path.dirname(xlsPath)
+    os.makedirs(p, exist_ok=True)
     try:
-        WORKBOOK = openpyxl.load_workbook(XLSPATH)
+        WORKBOOK = openpyxl.load_workbook(xlsPath)
         return True
     except FileNotFoundError:
         WORKBOOK = openpyxl.Workbook()
@@ -31,24 +40,24 @@ def _open_workbook() -> bool:
 def _save_workbook() -> bool:
     """ save the workbook. True is successful, False otherwise. May throw exceptions """
     if WORKBOOK is not None:
-        WORKBOOK.save(XLSPATH)
+        WORKBOOK.save(_getXLSPath())
         return True
     return False
 
 def _check_xls_exists() -> bool:
     """Checks that the excel file exits"""
-    return os.path.isfile(XLSPATH)
+    return os.path.isfile(_getXLSPath())
 
 def _remove_old_xls() -> None:
     """removes any invalid or corrupt xls file we had for whatever reason. """
     try:
-        print(f"Removing old db at {XLSPATH}")
-        os.remove(XLSPATH)
+        print(f"Removing old db at {_getXLSPath()}")
+        os.remove(_getXLSPath())
         return
     except FileNotFoundError:
         return
     except Exception as e:
-        print(f"Failed to remove file at: {XLSPATH}: {e}")
+        print(f"Failed to remove file at: {_getXLSPath()}: {e}")
         raise e
 
 def _ensure_workbook() -> bool:
@@ -70,7 +79,7 @@ def _ensure_workbook() -> bool:
 
 def _check_worksheet_exist(sheetname: str) -> bool:
     """given a worksheet name, check that it exists """
-    wb: openpyxl.Workbook = openpyxl.load_workbook(XLSPATH)
+    wb: openpyxl.Workbook = openpyxl.load_workbook(_getXLSPath())
     return sheetname in wb
 
 def _point_to_pixel(pt: int) -> int:
@@ -185,6 +194,8 @@ def ensure() -> bool:
 def set_config(config: Config):
     global CONFIG
     CONFIG = config
+    print("config is set")
+    print(config.__dict__)
     return
 
 def prune_old_data() -> int:
@@ -231,7 +242,7 @@ def delete_and_shift_rows(sheet: openpyxl.worksheet.worksheet, rowcount: int, ex
 
 def main():
     print("lib_elen_XLS:")
-    print(f"Checking {XLSPATH} exists: {_check_xls_exists()}")
+    print(f"Checking {_getXLSPath()} exists: {_check_xls_exists()}")
     print("Ensuring XLS creation...")
     _ensure_workbook()
     print("Pruning old data")

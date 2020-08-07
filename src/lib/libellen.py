@@ -58,7 +58,7 @@ set_config = None
 
 def read_config() -> Config:
     """ reads the config file at the regular path, returns None if no config is found """
-    global MAX_DB_SIZE, MAX_KEEP_DAYS, MAX_RECORD_COUNT, STORE_IMAGE_KIND, STORE_IMAGE, STORE_FULL_JSON, DATA_DIR, OUTPUT_DIR, KIND
+    global CONFIG, MAX_DB_SIZE, MAX_KEEP_DAYS, MAX_RECORD_COUNT, STORE_IMAGE_KIND, STORE_IMAGE, STORE_FULL_JSON, DATA_DIR, OUTPUT_DIR, KIND
     conf = configparser.ConfigParser()
     if not conf.read("./config.ini"):
         return None

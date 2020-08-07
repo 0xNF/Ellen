@@ -26,7 +26,7 @@ build single file exe:
 we take `$ellen_source` to be the top-level ellen directory.
 ```
 cd $ellen_source
-pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib"
+pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib" ellen
 ```
 omitting the `--hidden-import` flag will cause errors.
 

@@ -58,9 +58,9 @@ storefulljson = False   // Whether to store the entire Gorilla Data Object [True
 datadirectory = ./data  // Where to store temporary data
 outputdirectory = ./    // Where to output the Storage file
 kind = XLS              // Storage File type in either an Excel spreadsheet, or a Sqlite file [XLS, SQL]
-timezone                // Whether to store timestamps as local time (as seen by the computer running Ellen), or UTC. [Local, UTC]
+timezone = Local         // Whether to store timestamps as local time (as seen by the computer running Ellen), or UTC. [Local, UTC]
 
-port                    // Server port to bind to, defaults to "5000"
+port = 5000             // Server port to bind to, defaults to "5000"
 ```
 
 This config can be reloaded at any time with the `/reload` endpoint.

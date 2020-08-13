@@ -37,16 +37,19 @@ def read_config() -> Config:
     if not conf.read("./config.ini"):
         return None
     try:
-        MAX_KEEP_DAYS = int(conf["DEFAULT"]["MaxKeepDays"])
-        MAX_RECORD_COUNT = int(conf["DEFAULT"]["MaxRecordCount"])
-        MAX_DB_SIZE = int(conf["DEFAULT"]["MaxDbSize"])
-        STORE_IMAGE = json.loads(conf["DEFAULT"]["StoreImage"].lower())
-        STORE_IMAGE_KIND = str(conf["DEFAULT"]["StoreImageKind"])
-        STORE_FULL_JSON = json.loads(conf["DEFAULT"]["StoreFullJson"].lower()) # ghetto way of converting to booleans
-        DATA_DIR = str(conf["DEFAULT"]["DataDirectory"])
-        OUTPUT_DIR = str(conf["DEFAULT"]["OutputDirectory"])
-        KIND = str(conf["DEFAULT"]["Kind"])
-        CONFIG = Config(STORE_FULL_JSON, STORE_IMAGE, STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT, MAX_KEEP_DAYS, DATA_DIR, OUTPUT_DIR, KIND)
+        MAX_KEEP_DAYS = int(conf["MAINTENANCE"]["MaxKeepDays"])
+        MAX_RECORD_COUNT = int(conf["MAINTENANCE"]["MaxRecordCount"])
+        MAX_DB_SIZE = int(conf["MAINTENANCE"]["MaxDbSize"])
+
+        STORE_IMAGE = json.loads(conf["SAVE"]["StoreImage"].lower())
+        STORE_IMAGE_KIND = str(conf["SAVE"]["StoreImageKind"])
+        STORE_FULL_JSON = json.loads(conf["SAVE"]["StoreFullJson"].lower()) # ghetto way of converting to booleans
+        DATA_DIR = str(conf["SAVE"]["DataDirectory"])
+        OUTPUT_DIR = str(conf["SAVE"]["OutputDirectory"])
+        KIND = str(conf["SAVE"]["Kind"])
+
+        PORT = int(conf["SERVER"]["Port"])
+        CONFIG = Config(STORE_FULL_JSON, STORE_IMAGE, STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT, MAX_KEEP_DAYS, DATA_DIR, OUTPUT_DIR, KIND, PORT)
         return CONFIG
     except:
         return None
@@ -54,16 +57,21 @@ def read_config() -> Config:
 def write_default_config() -> Config:
     """ creates a default Config.ini at the regular path and returns the config object """
     conf = configparser.ConfigParser()
-    conf["DEFAULT"] = {
+    conf["MAINTENANCE"] = {
         "MaxKeepDays": '30',
         "MaxRecordCount": "10000",
         "MaxDbSize": "100",
+    }
+    conf["SAVE"] = {
         "StoreImageKind": "FACE",
         "StoreImage": "True",
         "StoreFullJson": "False",
         "DataDirectory": "./data",
         "OutputDirectory": "./",
-        "Kind": "XLS"
+        "Kind": "XLS",
+    }
+    conf["SERVER"] = {
+        "Port": "5000",
     }
     with open("./config.ini", 'w') as f:
         conf.write(f)

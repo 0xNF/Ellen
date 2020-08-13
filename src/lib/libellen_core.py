@@ -4,7 +4,7 @@ from PIL import Image
 
 class Config():
     """ Configuration object that dictates the details for how the saved IVAR data is stored """
-    def __init__(self, store_full_json: bool, store_image: bool, store_image_kind: str, max_size: int, max_records: int, max_days: int, save_path: str, out_dir: str, kind: str):
+    def __init__(self, store_full_json: bool, store_image: bool, store_image_kind: str, max_size: int, max_records: int, max_days: int, save_path: str, out_dir: str, kind: str, port: int):
         self.STORE_FULL_JSON: bool = store_full_json
         self.STORE_IMAGE: bool = store_image
         self.STORE_IMAGE_KIND: str = store_image_kind
@@ -14,6 +14,7 @@ class Config():
         self.SAVE_PATH: str = save_path
         self.OUTPUT_PATH: str = out_dir
         self.KIND: str = kind
+        self.PORT: int = port
 
 
 class Candidate():

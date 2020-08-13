@@ -84,7 +84,9 @@ def relod():
 def healthcheck():
     return 'Ellen is Running'
 
+# setup will always run, either through invocation via `Flask run` or from direct `main.
+# in case of `Flask run`, server port will be ignored and will always be `5000`. For custom port,
+# call Ellen directly such that the main method runs
 setup()
-
 if __name__ == "__main__":
-    app.run()
+    app.run(port=libellen.CONFIG.PORT)

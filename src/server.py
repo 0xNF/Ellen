@@ -16,8 +16,7 @@ def setup():
         if not conf:
             print("Failed to load config.ini, shutting down")
             sys.exit(-1)
-    libellen.SetActiveStore(libellen.KIND)
-    libellen.InitBackingStore()
+    libellen.apply_config(conf)
     print("Using the following config settings:")
     print(conf.__dict__)
     return

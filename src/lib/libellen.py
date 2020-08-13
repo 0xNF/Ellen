@@ -8,44 +8,10 @@ from .libellen_xls import prune_old_data as prune_xls, ensure as ensure_xls, upd
 from .libellen_sql import prune_old_data as prune_sql, ensure as ensure_sql, update_bap as update_bap_sql, update_ivar as update_ivar_sql, set_config as set_config_sql
 from .libellen_core import Config, Candidate, GImage
 
-# If true, stores the entire JSON blob as sent by the IVAR server. This will increase DB size.
-STORE_FULL_JSON = False
-
-# If true, stores the b64 encoded image data for the associated Ivar event. This will increase DB size.
-STORE_IMAGE = True
-
-# Multiple image types are sent by Gorilla - this determines which one to save
-# available choices are:
-    # SCENE, OBJECT, THUMB, FACE
-# Suggested storage kind of FACE, as it is smallest
-STORE_IMAGE_KIND = "FACE"
-
-# Maximum size of the Database in Megabytes.
-# numebrs <= 0 are considered to be 'unlimited'
-MAX_DB_SIZE = 100
-
-# Maximium number of records to keep before we start dropping the earliest recorded record
-# any number <= 0 is considerwed to be 'unlimited'
-MAX_RECORD_COUNT = 10_000
-
-# Maximium number of days backwards in time to keep records before we start deleting
-# any number <= 0 is considered to be 'unlimited'
-MAX_KEEP_DAYS = 30
-
-# Where to store temporary items like Images sent from Gorilla
-DATA_DIR = "./"
-
-# Where to write the sql or xls files
-OUTPUT_DIR = "./"
-
-# What type to output data to [XLS or SQL]
-KIND = "XLS"
-
 STORE_XLS = "XLS"
 STORE_SQL = "SQL"
 
-CONFIG: Config = Config(STORE_FULL_JSON, STORE_IMAGE, STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT, MAX_KEEP_DAYS, DATA_DIR, OUTPUT_DIR, STORE_XLS)
-
+CONFIG: Config = None
 
 _CHOSEN_STORE = None # assigned with the values from either STORE_XLS or STORE_SQL
 ACTIVE_STORE = None
@@ -56,9 +22,17 @@ update_bap = None
 update_ivar = None
 set_config = None
 
+def apply_config(conf: Config):
+    """ applies the supplied conf object to the server instance """
+    global CONFIG
+    CONFIG = conf
+    SetActiveStore()
+    InitBackingStore()
+    return
+
 def read_config() -> Config:
     """ reads the config file at the regular path, returns None if no config is found """
-    global CONFIG, MAX_DB_SIZE, MAX_KEEP_DAYS, MAX_RECORD_COUNT, STORE_IMAGE_KIND, STORE_IMAGE, STORE_FULL_JSON, DATA_DIR, OUTPUT_DIR, KIND
+    global CONFIG
     conf = configparser.ConfigParser()
     if not conf.read("./config.ini"):
         return None
@@ -66,9 +40,9 @@ def read_config() -> Config:
         MAX_KEEP_DAYS = int(conf["DEFAULT"]["MaxKeepDays"])
         MAX_RECORD_COUNT = int(conf["DEFAULT"]["MaxRecordCount"])
         MAX_DB_SIZE = int(conf["DEFAULT"]["MaxDbSize"])
-        STORE_IMAGE = bool(conf["DEFAULT"]["StoreImage"])
+        STORE_IMAGE = json.loads(conf["DEFAULT"]["StoreImage"].lower())
         STORE_IMAGE_KIND = str(conf["DEFAULT"]["StoreImageKind"])
-        STORE_FULL_JSON = bool(conf["DEFAULT"]["StoreFullJson"])
+        STORE_FULL_JSON = json.loads(conf["DEFAULT"]["StoreFullJson"].lower()) # ghetto way of converting to booleans
         DATA_DIR = str(conf["DEFAULT"]["DataDirectory"])
         OUTPUT_DIR = str(conf["DEFAULT"]["OutputDirectory"])
         KIND = str(conf["DEFAULT"]["Kind"])
@@ -105,26 +79,23 @@ def InitBackingStore():
         raise Exception("No Active Store was set. Call SetActiveStore before continuing")
     return
 
-def SetActiveStore(which: str):
+def SetActiveStore():
     """ Sets the backing store to use. Accepted values are either XLS or SQL """
-    global ACTIVE_STORE, _CHOSEN_STORE, prune, ensure, update_bap, update_ivar
-    if which == STORE_XLS:
+    global prune, ensure, update_bap, update_ivar
+    if CONFIG.KIND == STORE_XLS:
         prune = prune_xls
         ensure = ensure_xls
         update_bap = update_bap_xls
         update_ivar = update_ivar_xls
         set_config = set_config_xls
-        # ACTIVE_STORE = libellen_xls
-    elif which == STORE_SQL:
+    elif CONFIG.KIND == STORE_SQL:
         prune = prune_sql
         ensure = ensure_sql
         update_bap = update_bap_sql
         update_ivar = update_ivar_sql
         set_config = set_config_sql
-        # ACTIVE_STORE = libellen_sql
     else:
         raise Exception("Backing store must be oneof 'XLS', 'SQL'")
-    _CHOSEN_STORE = which
     set_config(CONFIG)
     return
 
@@ -170,11 +141,6 @@ def receive_json(jobj: dict) -> int:
         return 0
     except Exception as e:
         raise RuntimeError("Failed to store Gorilla data", e)
-
-# def prune() -> int:
-#     """ using the current Active Store, prune the data according to Config Rules so that the files don't get too unwiedly.
-#      Returns the number of entries deleted. """
-#     return prune_old_data()
 
 def main():
     print("call form LibEllen")

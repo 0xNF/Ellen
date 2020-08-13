@@ -10,13 +10,13 @@ _DBNAME = "ellen.sqlite"
 
 # Private Connection to the Database - we keep it open whenever we can
 _CONN: sqlite3.Connection = None
-CONFIG: Config = None
+_CONFIG: Config = None
 
 def _getDBPath() -> str:
-    if CONFIG is None:
+    if _CONFIG is None:
         return  os.path.join(".", _DBNAME)
     else:
-        return os.path.join(CONFIG.OUTPUT_PATH, _DBNAME)
+        return os.path.join(_CONFIG.OUTPUT_PATH, _DBNAME)
 
 def _open_conn() -> sqlite3.Connection:
     dbpath = _getDBPath()
@@ -89,8 +89,8 @@ def ensure() -> bool:
     return _ensure_db()
 
 def set_config(config: Config):
-    global CONFIG
-    CONFIG = config
+    global _CONFIG
+    _CONFIG = config
     return
 
 def prune_old_data() -> int:
@@ -100,12 +100,12 @@ def prune_old_data() -> int:
     
     rowcount = c.execute("SELECT COUNT(*) FROM ivardata").fetchone()[0]
     # Check for number of rows beyond max row count
-    excess_rows = rowcount - CONFIG.MAX_RECORD_COUNT
+    excess_rows = rowcount - _CONFIG.MAX_RECORD_COUNT
     if excess_rows > 0:
             c.execute("Delete from ivardata where rowid IN (Select rowid from ivardata limit ?);", (excess_rows,))
 
     # Check for items older than max keep days:
-    maxDate = datetime.now() - timedelta(days=CONFIG.MAX_KEEP_DAYS)
+    maxDate = datetime.now() - timedelta(days=_CONFIG.MAX_KEEP_DAYS)
     rows = c.execute("DELETE FROM ivardata WHERE Timestamp <= ?", (maxDate, ))
 
     new_rowcount = c.execute("SELECT COUNT(*) FROM ivardata").fetchone()[0]

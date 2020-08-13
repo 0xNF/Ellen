@@ -3,13 +3,16 @@ import sys, os
 import sqlite3
 import json
 import configparser
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 from .libellen_xls import prune_old_data as prune_xls, ensure as ensure_xls, update_bap as update_bap_xls, update_ivar as update_ivar_xls, set_config as set_config_xls
 from .libellen_sql import prune_old_data as prune_sql, ensure as ensure_sql, update_bap as update_bap_sql, update_ivar as update_ivar_sql, set_config as set_config_sql
 from .libellen_core import Config, Candidate, GImage
 
 STORE_XLS = "XLS"
 STORE_SQL = "SQL"
+
+TZ_LOCAL = "local"
+TZ_UTC = "utc"
 
 CONFIG: Config = None
 
@@ -47,9 +50,14 @@ def read_config() -> Config:
         DATA_DIR = str(conf["SAVE"]["DataDirectory"])
         OUTPUT_DIR = str(conf["SAVE"]["OutputDirectory"])
         KIND = str(conf["SAVE"]["Kind"])
+        TIMEZONE = str(conf["SAVE"]["Timezone"])
 
         PORT = int(conf["SERVER"]["Port"])
-        CONFIG = Config(STORE_FULL_JSON, STORE_IMAGE, STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT, MAX_KEEP_DAYS, DATA_DIR, OUTPUT_DIR, KIND, PORT)
+
+        CONFIG = Config(STORE_FULL_JSON, STORE_IMAGE,
+        STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT,
+        MAX_KEEP_DAYS, DATA_DIR, OUTPUT_DIR, KIND, PORT,
+        TIMEZONE)
         return CONFIG
     except:
         return None
@@ -69,6 +77,7 @@ def write_default_config() -> Config:
         "DataDirectory": "./data",
         "OutputDirectory": "./",
         "Kind": "XLS",
+        "Timezone": "Local"
     }
     conf["SERVER"] = {
         "Port": "5000",
@@ -118,6 +127,8 @@ def receive_json(jobj: dict) -> int:
     try:
         id = jobj["id"]
         timestamp = datetime.strptime(jobj["common"]["time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        if CONFIG.TIMEZONE.lower() == TZ_LOCAL.lower():
+            timestamp = timestamp.replace(tzinfo=timezone.utc).astimezone(tz=None).replace(tzinfo=None)
         eventType = jobj["common"]["type"]
         img: GImage = None
         candidates: List[Candidate] = []

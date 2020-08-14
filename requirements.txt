@@ -1,0 +1,6 @@
+#
+####### Ellen Requirements and Dependencies #######
+#
+pillow ~= 7.2
+openpyxl ~= 3.0.2
+flask ~= 1.1

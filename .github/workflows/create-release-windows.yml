@@ -10,10 +10,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    
+  build:    
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -39,7 +37,7 @@ jobs:
         pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib" -n ellen
         compress-archive -path "./dist/ellen.exe ./config.ini" -destinationpath "ellen.zip"
     - name: Create Release
-    - id: create_release
+      id: create_release
       uses: actions/create-release@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,8 +45,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           draft: true
-          prerelease: false
-          
+          prerelease: false          
     - name: Upload Release Asset
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1

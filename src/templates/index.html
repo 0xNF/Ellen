@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Ellen - Manage Settings</h1>
+    <p class="lead">Settings related to how Ellen runs and saves IVAR data.</p>
+
+
+
+    {% if config %}
+        {{ config.__dict__ }}
+    {% else %}
+        <!-- No config data was found. -->
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>No Config File Found!</strong>
+            No config file was found while loading Ellen. A replacement, default <strong>config.ini</strong> file has been generated for you.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+
+    <form>
+
+        <h3>Server Settings</h3>
+        <p>Settings related to the Ellen service itself</p>
+    
+        <div class="form-group row" title="Enables or Disables collection of IVAR data sent to this server. If this option is turned off, the server will still be running, but it will not respond to any /savegorilla requests. Default: On.">
+          <label for="serverOn" class="col-sm-2 col-form-label">Server On</label>
+          <div class="col-sm-10">
+            <input id="serverOn" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success" data-offstyle="outline-danger" data-size="xs">
+          </div>
+        </div>
+
+        <div class="form-group row" title="The port number to bind Ellen to. We don't recommend changing this unless you are running Ellen on a machine with a conflicting service running on the same port. Default: 5000. This coresponds to the 'port' option in config.ini">
+          <label for="serverPort" class="col-sm-2 col-form-label">Port</label>
+          <div class="col-sm-10">
+            <input id="serverPort" type="number" min="1" max="65535" placeholder="5000" value={{config.PORT}}>
+          </div>
+        </div>
+
+        <h3>Maintenance Settings</h3>
+        <p>Settings related to how Ellen handles stored records</p>
+        
+        <div class="form-group row" title="Maximum number of days back to keep recorded data. Data recorded from earlier will be automatically deleted from the storage file. Default: 30. This coresponds to the 'maxkeepdays' option in config.ini">
+            <label for="maxkeepdays" class="col-sm-2 col-form-label">Maximum Storage Days</label>
+            <div class="col-sm-10">
+                <input id="maxkeepdays" type="number" min="-1" placeholder="30" value={{config.MAX_KEEP_DAYS}}>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Maximum number of records to keep recorded data. New data will push out old data from the storage file automatically. Default: 10,000. This coresponds to the 'maxrecordcount' option in config.ini">
+            <label for="maxrecordcount" class="col-sm-2 col-form-label">Maximum Record Count</label>
+            <div class="col-sm-10">
+                <input id="maxrecordcount" type="number" min="-1" placeholder="10000" value={{config.MAX_RECORD_COUNT}}>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Maximum size of the storage file in MB. When the maximum is reached and new data is received, old data will be pruned until the file is underneath the maximum size again. Default: 100. This coresponds to the 'maxdbsize' option in config.ini">
+            <label for="maxdbsize" class="col-sm-2 col-form-label">Maximum File Size (MB)</label>
+            <div class="col-sm-10">
+                <input id="maxdbsize" type="number" min="-1" placeholder="100" value={{config.MAX_SIZE}}>
+            </div>
+        </div>
+  
+
+        <h3>Saving, Storage, and IVAR Settings</h3>
+        <p>Settings related to how Ellen stores received data</p>
+
+        <div class="form-group row" title="Whether to save data as an Excel file or as a Sqlite DB file. Default: Excel. This coresponds to the 'kind' option in config.ini">
+            <label for="kind" class="col-sm-2 col-form-label">Storage Type</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="kind">
+                    <option value="excel" {% if config.KIND=="XLS" %} selected="selected"{% endif %}>Excel (.xlsx)</option>
+                    <option value="sql" {% if config.KIND=="SQL" %} selected="selected"{% endif %}>SQLite (.sqlite)</option>
+                  </select>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Whether to save Image data. If on, Image data will be placed in each row of the Excel file, or encoded as b64 data in the SQL file. Default: On. This coresponds to the 'storeimage' option in config.ini">
+            <label for="storeimage" class="col-sm-2 col-form-label">Save Image</label>
+            <div class="col-sm-10">
+              <input id="storeimage" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success" data-offstyle="outline-danger" data-size="xs" {% if not config.STORE_IMAGE %} off="off"{% endif %}>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Gorilla sends multiple crops of the recorded image. This option determines which one Ellen will save into the output file. Default: FACE. This option corresponds to the 'storeimagekind' in config.ini">
+            <label for="storeimagekind" class="col-sm-2 col-form-label">Gorilla Image Type</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="storeimagekind">
+                    <option value="face" {% if config.STORE_IMAGE_KIND=="FACE" %} selected="selected"{% endif %}>FACE</option>
+                    <option value="scene" {% if config.STORE_IMAGE_KIND=="SCENE" %} selected="selected"{% endif %}>SCENE</option>
+                    <option value="object" {% if config.STORE_IMAGE_KIND=="OBJECT" %} selected="selected"{% endif %}>OBJECT</option>
+                    <option value="image" {% if config.STORE_IMAGE_KIND=="IMAGE" %} selected="selected"{% endif %}>IMAGE</option>
+                  </select>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Gorilla sends a detailed JSON object to each registered subscription endpoint. This JSON object contains lots of extra useful data, but is very large. Enabling this option can have negative performance implications and the output file size can grow large very quickly. We do not recommend enabling this option. Default: Off. This coresponds to the 'storefulljson' option in config.ini">
+            <label for="storefulljson" class="col-sm-2 col-form-label">Save Full Gorilla Object</label>
+            <div class="col-sm-10">
+              <input id="storefulljson" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success" data-offstyle="outline-danger" data-size="xs" {% if not config.STORE_FULL_JSON %} off="off"{% endif %}>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Gorilla sends data with a timestamp in Local time according to the machine that IVAR is running on. If set to UTC, this option will convert the datetime to UTC. If set to local, Ellen will use the same timestamp that Gorilla sends. Default: Local. This coresponds to the 'timezone' option in config.ini">
+            <label for="timezone" class="col-sm-2 col-form-label">Timezone</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="timezone">
+                    <option value="local" {% if config.TIMEZONE=="Local" %} selected="selected"{% endif %}>Local</option>
+                    <option value="utc" {% if config.TIMEZONE=="UTC" %} selected="selected"{% endif %}>UTC</option>
+                  </select>
+            </div>
+        </div>
+
+        <div class="form-group row" title="Where Ellen should save the Excel or Sql file. Default: $EllenRoot. This coresponds to the 'outputdirectory' option in config.ini">
+            <label for="outputdirectory" class="col-sm-2 col-form-label">Output Directory</label>
+            <div class="col-sm-10">
+                <input id="outputdirectory" type="text" placeholder="./" value={{config.OUTPUT_PATH}}>
+            </div>
+        </div>
+
+
+        <div class="form-group row">
+            <span class="col-sm-2">
+                <button class="btn btn-success" title="Saves the settings and restarts the server">Save and Restart</button>
+            </span>
+            <span class="col-sm-2 offset-2">
+                <button class="btn btn-success" title="Restarts the server without saving any settings">Restart</button>
+            </span>
+            <span class="col-sm-2 offset-2">
+                <button class="btn btn-warning" title="Regenerates the default config.ini file. Use this in case something happened to your old one. this in case something happened to your old one.">Regenerate Config.ini</button>
+            </span>
+        </div>
+    </form>
+
+   
+</div>
+{% endblock content %}

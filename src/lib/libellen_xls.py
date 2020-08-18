@@ -229,13 +229,13 @@ def prune_old_data() -> int:
     return deleted
 
 def delete_and_shift_rows(sheet: openpyxl.worksheet.worksheet, rowcount: int, excess_rows: int, max_col: str, img_col: str):
-    start_row = 1 + 1 + excess_rows # 1(skip header) + 1 (one up from the last known excess row) + ex (the excess count)
-    shift = (rowcount - start_row + 1)*-1 # +1 is skip header, *-1 is to move up, not down.
-    sheet.move_range(f"A{start_row}:{max_col}{rowcount}", shift) 
-    anchors = list(openpyxl.utils.cols_from_range(f"{img_col}2:{img_col}{(-1*shift)+1}"))
-    anchors = [x for y in anchors for x in y] # flatten
-    _delete_images_with_anchors(sheet._images, anchors)
-    _shift_images(sheet._images, shift)
+    # start_row = 1 + 1 + excess_rows # 1(skip header) + 1 (one up from the last known excess row) + ex (the excess count)
+    # shift = (rowcount - start_row + 1)*-1 # +1 is skip header, *-1 is to move up, not down.
+    # sheet.move_range(f"A{start_row}:{max_col}{rowcount}", shift) 
+    # anchors = list(openpyxl.utils.cols_from_range(f"{img_col}2:{img_col}{(-1*shift)+1}"))
+    # anchors = [x for y in anchors for x in y] # flatten
+    # _delete_images_with_anchors(sheet._images, anchors)
+    # _shift_images(sheet._images, shift)
     return
 
 def main():

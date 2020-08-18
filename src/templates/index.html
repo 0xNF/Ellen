@@ -3,60 +3,82 @@
 {% block content %}
 
 <script>
-    function submit_form() {
-        $.ajax({
-            url: "manage/updateconfig",
-            type: 'post',
-            data: $('#configform').serialize(),
-            success: function(data, status, xhr){
-                showBanner("success", "Config Update Success", data);
-            },
-            error: function(xhr, status, err) {
-                showBanner("danger", "Config Update Error", err);
-            }
-        });
+  async function submit_form() {
+    try {
+      const response = await fetch("manage/updateconfig", {
+        method: 'POST',
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: $('#configform').serialize(),
+      });
+      const data = await response.text()
+      if (!response.ok) {
+        showBanner("danger", "Config Update Error", data);
+      }
+      else {
+        showBanner("success", "Config Updated Successfully", data);
+      }
+    } catch (Error) {
+      showBanner("danger", "Config Update Error", Error);
     }
+  }
 
-    function newconfig() {
-      $.ajax({
-            url: "manage/newconfig",
-            type: 'post',
-            success: function(data, status, xhr) {
-                location.reload()
-                showBanner("success", "Config Regernated Successfully", data);
-            },
-            error: function(xhr, status, err) {
-                showBanner("danger", "Config Regeneration Error", err);
-            }
-        });
+  async function newconfig() {
+    try {
+      const response = await fetch("manage/newconfig", {
+        method: 'POST',
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      });
+      const data = await response.text()
+      if (!response.ok) {
+        showBanner("danger", "Config Regenerate Error", data);
+      }
+      else {
+        showBanner("success", "Config Regenerated Successfully", data);
+        location.reload();
+      }
+    } catch (Error) {
+      showBanner("danger", "Config Regenerate Error", Error);
     }
+  }
 
-    function reload() {
-      $.ajax({
-            url: "manage/reload",
-            type: 'post',
-            success: function(data, status, xhr){
-                showBanner("success", "Server Reloaded Successfully", data);
-            },
-            error: function(xhr, status, err) {
-                showBanner("danger", "Server Reload Error", err);
-            }
+  async function reload() {
+    try {
+        const response = await fetch("manage/reload", {
+          method: 'POST', 
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         });
-    }
+        const data = await response.text()
+        showBanner("success", "Server Reloaded Successfully", data);
+      } catch (Error) {
+        showBanner("danger", "Server Reload Error", Error);
+      }
+  }
 
-    function showBanner(logLevel, title, message) {
-        document.body.scrollTop = 0; // For Safari
-        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-        $("#banner_title").text(title);
-        $("#banner_message").text(message);
-        cl = `alert-${logLevel}`;
-        $("#banner_alert").addClass(cl);
-        $("#banner_alert").addClass("show");
-    }
+  function showBanner(logLevel, title, message) {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    $("#banner_alert").removeClass("alert-warning alert-danger alert-success alert-primary alert-secondary")
+    $("#banner_timestamp").text(Date())
+    $("#banner_title").text(title);
+    $("#banner_message").text(message);
+    cl = `alert-${logLevel}`;
+    $("#banner_alert").addClass(cl);
+    $("#banner_alert").addClass("show");
+  }
 </script>
 
 {% macro make_modal(id, title, msg, submitmsg, submitfunc, logLevel="")%}
-<div class="modal fade" id="{{id}}" name="{{id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{id}}" aria-hidden="true">
+<div class="modal fade" id="{{id}}" name="{{id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{id}}"
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -70,7 +92,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" onclick="{{submitfunc}}" data-dismiss="modal" class="btn btn-primary {{'btn-'+logLevel if logLevel else ''}}">{{ submitmsg }}</button>
+        <button type="button" onclick="{{submitfunc}}" data-dismiss="modal"
+          class="btn btn-primary {{'btn-'+logLevel if logLevel else ''}}">{{ submitmsg }}</button>
       </div>
     </div>
   </div>
@@ -79,156 +102,179 @@
 
 <!-- banner for status messages. Not displayed by default. -->
 <div id="banner_alert" class="alert alert-dismissible fade" role="alert">
-    <strong id="banner_title">No Config File Found!</strong>
-    <div id="banner_message">No config file was found while loading Ellen. A replacement, default <strong>config.ini</strong> file has been generated for you.</div>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+  <div>
+    <sub id="banner_timestamp">Timestamp</sub>
+  </div>
+  <strong id="banner_title">No Config File Found!</strong>
+  <div id="banner_message">No config file was found while loading Ellen. A replacement, default
+    <strong>config.ini</strong> file has been generated for you.</div>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
 </div>
 
 <div class="container">
-    <h1>Ellen - Manage Settings</h1>
-    <p class="lead">Settings related to how Ellen runs and saves IVAR data.</p>
+  <h1>Ellen - Manage Settings</h1>
+  <p class="lead">Settings related to how Ellen runs and saves IVAR data.</p>
 
-    {% if not config %}
-        <!-- No config data was found. -->
-        showBanner("warning", "No Config File Found!", "No config file was found while loading Ellen. A replacement, default <strong>config.ini</strong> file has been generated for you.");
-    {% endif %}
+  {% if not config %}
+  <!-- No config data was found. -->
+  showBanner("warning", "No Config File Found!", "No config file was found while loading Ellen. A replacement, default
+  <strong>config.ini</strong> file has been generated for you.");
+  {% endif %}
 
-    <form id="configform">
+  <form id="configform">
 
-        <h3>Server Settings</h3>
-        <p>Settings related to the Ellen service itself</p>
-    
-        <div class="form-group row" title="Enables or Disables collection of IVAR data sent to this server. If this option is turned off, the server will still be running, but it will not respond to any /savegorilla requests. Default: On.">
-          <label for="serverOn" class="col-sm-2 col-form-label">Server On</label>
-          <div class="col-sm-2">
-            <input id="serverOn" name="serverOn" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success" data-offstyle="outline-danger" data-size="xs">
-          </div>
-        </div>
+    <h3>Server Settings</h3>
+    <p>Settings related to the Ellen service itself</p>
 
-        <div class="form-group row" title="The port number to bind Ellen to. We don't recommend changing this unless you are running Ellen on a machine with a conflicting service running on the same port. Default: 5000. This coresponds to the 'port' option in config.ini">
-          <label for="serverPort" class="col-sm-2 col-form-label">Port</label>
-          <div class="col-sm-2">
-            <input id="serverPort" name="serverPort" type="number" min="1" max="65535" placeholder="5000" value={{config.PORT}}>
-          </div>
-        </div>
+    <div class="form-group row"
+      title="Enables or Disables collection of IVAR data sent to this server. If this option is turned off, the server will still be running, but it will not respond to any /savegorilla requests. Default: On.">
+      <label for="serverOn" class="col-sm-2 col-form-label">Server On</label>
+      <div class="col-sm-2">
+        <input id="serverOn" name="serverOn" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success"
+          data-offstyle="outline-danger" data-size="xs">
+      </div>
+    </div>
 
-        <h3>Maintenance Settings</h3>
-        <p>Settings related to how Ellen handles stored records</p>
-        
-        <div class="form-group row" title="Maximum number of days back to keep recorded data. Data recorded from earlier will be automatically deleted from the storage file. Default: 30. This coresponds to the 'maxkeepdays' option in config.ini">
-            <label for="maxkeepdays" class="col-sm-2 col-form-label">Maximum Storage Days</label>
-            <div class="col-sm-2">
-                <input id="maxkeepdays" name="maxkeepdays" type="number" min="-1" placeholder="30" value={{config.MAX_KEEP_DAYS}}>
-            </div>
-        </div>
+    <div class="form-group row"
+      title="The port number to bind Ellen to. We don't recommend changing this unless you are running Ellen on a machine with a conflicting service running on the same port. Default: 5000. This coresponds to the 'port' option in config.ini">
+      <label for="serverPort" class="col-sm-2 col-form-label">Port</label>
+      <div class="col-sm-2">
+        <input id="serverPort" name="serverPort" type="number" min="1" max="65535" placeholder="5000"
+          value={{config.PORT}}>
+      </div>
+    </div>
 
-        <div class="form-group row" title="Maximum number of records to keep recorded data. New data will push out old data from the storage file automatically. Default: 10,000. This coresponds to the 'maxrecordcount' option in config.ini">
-            <label for="maxrecordcount" class="col-sm-2 col-form-label">Maximum Record Count</label>
-            <div class="col-sm-2">
-                <input id="maxrecordcount" name="maxrecordcount" type="number" min="-1" placeholder="10000" value={{config.MAX_RECORD_COUNT}}>
-            </div>
-        </div>
+    <h3>Maintenance Settings</h3>
+    <p>Settings related to how Ellen handles stored records</p>
 
-        <div class="form-group row" title="Maximum size of the storage file in MB. When the maximum is reached and new data is received, old data will be pruned until the file is underneath the maximum size again. Default: 100. This coresponds to the 'maxdbsize' option in config.ini">
-            <label for="maxdbsize" class="col-sm-2 col-form-label">Maximum File Size (MB)</label>
-            <div class="col-sm-2">
-                <input id="maxdbsize" name="maxdbsize" type="number" min="-1" placeholder="100" value={{config.MAX_SIZE}}>
-            </div>
-        </div>
-  
+    <div class="form-group row"
+      title="Maximum number of days back to keep recorded data. Data recorded from earlier will be automatically deleted from the storage file. Default: 30. This coresponds to the 'maxkeepdays' option in config.ini">
+      <label for="maxkeepdays" class="col-sm-2 col-form-label">Maximum Storage Days</label>
+      <div class="col-sm-2">
+        <input id="maxkeepdays" name="maxkeepdays" type="number" min="-1" placeholder="30"
+          value={{config.MAX_KEEP_DAYS}}>
+      </div>
+    </div>
 
-        <h3>Saving, Storage, and IVAR Settings</h3>
-        <p>Settings related to how Ellen stores received data</p>
+    <div class="form-group row"
+      title="Maximum number of records to keep recorded data. New data will push out old data from the storage file automatically. Default: 10,000. This coresponds to the 'maxrecordcount' option in config.ini">
+      <label for="maxrecordcount" class="col-sm-2 col-form-label">Maximum Record Count</label>
+      <div class="col-sm-2">
+        <input id="maxrecordcount" name="maxrecordcount" type="number" min="-1" placeholder="10000"
+          value={{config.MAX_RECORD_COUNT}}>
+      </div>
+    </div>
 
-        <div class="form-group row" title="Whether to save data as an Excel file or as a Sqlite DB file. Default: Excel. This coresponds to the 'kind' option in config.ini">
-            <label for="kind" class="col-sm-2 col-form-label">Storage Type</label>
-            <div class="col-sm-2">
-                <select class="form-control" id="kind" name="kind">
-                    <option value="excel" {% if config.KIND=="XLS" %} selected="selected"{% endif %}>Excel (.xlsx)</option>
-                    <option value="sql" {% if config.KIND=="SQL" %} selected="selected"{% endif %}>SQLite (.sqlite)</option>
-                  </select>
-            </div>
-        </div>
-
-        <div class="form-group row" title="Whether to save Image data. If on, Image data will be placed in each row of the Excel file, or encoded as b64 data in the SQL file. Default: On. This coresponds to the 'storeimage' option in config.ini">
-            <label for="storeimage" class="col-sm-2 col-form-label">Save Image</label>
-            <div class="col-sm-2">
-              <input id="storeimage" name="storeimage" type="checkbox" data-toggle="toggle"
-               data-onstyle="outline-success" data-size="xs"
-               {% if config.STORE_IMAGE %} checked="checked" {% endif %}>
-            </div>
-        </div>
-
-        <div class="form-group row" title="Gorilla sends multiple crops of the recorded image. This option determines which one Ellen will save into the output file. Default: FACE. This option corresponds to the 'storeimagekind' in config.ini">
-            <label for="storeimagekind" class="col-sm-2 col-form-label">Gorilla Image Type</label>
-            <div class="col-sm-2">
-                <select class="form-control" id="storeimagekind" name="storeimagekind">
-                    <option value="face" {% if config.STORE_IMAGE_KIND=="FACE" %} selected="selected"{% endif %}>FACE</option>
-                    <option value="scene" {% if config.STORE_IMAGE_KIND=="SCENE" %} selected="selected"{% endif %}>SCENE</option>
-                    <option value="object" {% if config.STORE_IMAGE_KIND=="OBJECT" %} selected="selected"{% endif %}>OBJECT</option>
-                    <option value="image" {% if config.STORE_IMAGE_KIND=="IMAGE" %} selected="selected"{% endif %}>IMAGE</option>
-                  </select>
-            </div>
-        </div>
-
-        <div class="form-group row" title="Gorilla sends a detailed JSON object to each registered subscription endpoint. This JSON object contains lots of extra useful data, but is very large. Enabling this option can have negative performance implications and the output file size can grow large very quickly. We do not recommend enabling this option. Default: Off. This coresponds to the 'storefulljson' option in config.ini">
-            <label for="storefulljson" class="col-sm-2 col-form-label">Save Full Gorilla Object</label>
-            <div class="col-sm-2">
-              <input id="storefulljson" name="storefulljson" type="checkbox" data-toggle="toggle" data-onstyle="outline-success" 
-              data-size="xs" 
-              {% if config.STORE_FULL_JSON %} checked="checked" {% endif %}>
-            </div>
-        </div>
-
-        <div class="form-group row" title="Gorilla sends data with a timestamp in Local time according to the machine that IVAR is running on. If set to UTC, this option will convert the datetime to UTC. If set to local, Ellen will use the same timestamp that Gorilla sends. Default: Local. This coresponds to the 'timezone' option in config.ini">
-            <label for="timezone" class="col-sm-2 col-form-label">Timezone</label>
-            <div class="col-sm-2">
-                <select class="form-control" id="timezone" name="timezone">
-                    <option value="local" {% if config.TIMEZONE=="Local" %} selected="selected"{% endif %}>Local</option>
-                    <option value="utc" {% if config.TIMEZONE=="UTC" %} selected="selected"{% endif %}>UTC</option>
-                  </select>
-            </div>
-        </div>
-
-        <div class="form-group row" title="Where Ellen should save the Excel or Sql file. Default: $EllenRoot. This coresponds to the 'outputdirectory' option in config.ini">
-            <label for="outputdirectory" class="col-sm-2 col-form-label">Output Directory</label>
-            <div class="col-sm-2">
-                <input id="outputdirectory" name="outputdirectory" type="text" placeholder="./" value={{config.OUTPUT_PATH}}>
-            </div>
-        </div>
+    <div class="form-group row"
+      title="Maximum size of the storage file in MB. When the maximum is reached and new data is received, old data will be pruned until the file is underneath the maximum size again. Default: 100. This coresponds to the 'maxdbsize' option in config.ini">
+      <label for="maxdbsize" class="col-sm-2 col-form-label">Maximum File Size (MB)</label>
+      <div class="col-sm-2">
+        <input id="maxdbsize" name="maxdbsize" type="number" min="-1" placeholder="100" value={{config.MAX_SIZE}}>
+      </div>
+    </div>
 
 
-        <div class="form-group row">
-            <span class="col-sm-2">
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#saveRestartModal" title="Saves the settings and restarts the server">Save and Restart</button>
-            </span>
-            <span class="col-sm-2 offset-2">
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#restartModal" title="Restarts the server without saving any settings">Restart</button>
-            </span>
-            <span class="col-sm-2 offset-2">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#regenerateModal" title="Regenerates the default config.ini file. Use this in case something happened to your old one. this in case something happened to your old one.">Regenerate Config.ini</button>
-            </span>
-        </div>
+    <h3>Saving, Storage, and IVAR Settings</h3>
+    <p>Settings related to how Ellen stores received data</p>
+
+    <div class="form-group row"
+      title="Whether to save data as an Excel file or as a Sqlite DB file. Default: Excel. This coresponds to the 'kind' option in config.ini">
+      <label for="kind" class="col-sm-2 col-form-label">Storage Type</label>
+      <div class="col-sm-2">
+        <select class="form-control" id="kind" name="kind">
+          <option value="XLS" {% if config.KIND=="XLS" %} selected="selected" {% endif %}>Excel (.xlsx)</option>
+          <option value="SQL" {% if config.KIND=="SQL" %} selected="selected" {% endif %}>SQLite (.sqlite)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group row"
+      title="Whether to save Image data. If on, Image data will be placed in each row of the Excel file, or encoded as b64 data in the SQL file. Default: On. This coresponds to the 'storeimage' option in config.ini">
+      <label for="storeimage" class="col-sm-2 col-form-label">Save Image</label>
+      <div class="col-sm-2">
+        <input id="storeimage" name="storeimage" type="checkbox" data-toggle="toggle" data-onstyle="outline-success"
+          data-size="xs" {% if config.STORE_IMAGE %} checked="checked" {% endif %}>
+      </div>
+    </div>
+
+    <div class="form-group row"
+      title="Gorilla sends multiple crops of the recorded image. This option determines which one Ellen will save into the output file. Default: FACE. This option corresponds to the 'storeimagekind' in config.ini">
+      <label for="storeimagekind" class="col-sm-2 col-form-label">Gorilla Image Type</label>
+      <div class="col-sm-2">
+        <select class="form-control" id="storeimagekind" name="storeimagekind">
+          <option value="FACE" {% if config.STORE_IMAGE_KIND=="FACE" %} selected="selected" {% endif %}>FACE</option>
+          <option value="SCENE" {% if config.STORE_IMAGE_KIND=="SCENE" %} selected="selected" {% endif %}>SCENE</option>
+          <option value="OBJECT" {% if config.STORE_IMAGE_KIND=="OBJECT" %} selected="selected" {% endif %}>OBJECT
+          </option>
+          <option value="IMAGE" {% if config.STORE_IMAGE_KIND=="IMAGE" %} selected="selected" {% endif %}>IMAGE</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group row"
+      title="Gorilla sends a detailed JSON object to each registered subscription endpoint. This JSON object contains lots of extra useful data, but is very large. Enabling this option can have negative performance implications and the output file size can grow large very quickly. We do not recommend enabling this option. Default: Off. This coresponds to the 'storefulljson' option in config.ini">
+      <label for="storefulljson" class="col-sm-2 col-form-label">Store Full Gorilla Object</label>
+      <div class="col-sm-2">
+        <input id="storefulljson" name="storefulljson" type="checkbox" data-toggle="toggle"
+          data-onstyle="outline-success" data-size="xs" {% if config.STORE_FULL_JSON %} checked="checked" {% endif %}>
+      </div>
+    </div>
+
+    <div class="form-group row"
+      title="Gorilla sends data with a timestamp in Local time according to the machine that IVAR is running on. If set to UTC, this option will convert the datetime to UTC. If set to local, Ellen will use the same timestamp that Gorilla sends. Default: Local. This coresponds to the 'timezone' option in config.ini">
+      <label for="timezone" class="col-sm-2 col-form-label">Timezone</label>
+      <div class="col-sm-2">
+        <select class="form-control" id="timezone" name="timezone">
+          <option value="Local" {% if config.TIMEZONE=="Local" %} selected="selected" {% endif %}>Local</option>
+          <option value="UTC" {% if config.TIMEZONE=="UTC" %} selected="selected" {% endif %}>UTC</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group row"
+      title="Where Ellen should save the Excel or Sql file. Default: $EllenRoot. This coresponds to the 'outputdirectory' option in config.ini">
+      <label for="outputdirectory" class="col-sm-2 col-form-label">Output Directory</label>
+      <div class="col-sm-2">
+        <input id="outputdirectory" name="outputdirectory" type="text" placeholder="./" value={{config.OUTPUT_PATH}}>
+      </div>
+    </div>
 
 
-        <!-- Modal for Saving. It's in the form so it can trigger on the submit button -->
-        {{ make_modal("saveRestartModal","Save Changes",
+    <div class="form-group row">
+      <span class="col-sm-2">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#saveRestartModal"
+          title="Saves the settings and restarts the server">Save and Restart</button>
+      </span>
+      <span class="col-sm-2 offset-2">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#restartModal"
+          title="Restarts the server without saving any settings">Restart</button>
+      </span>
+      <span class="col-sm-2 offset-2">
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#regenerateModal"
+          title="Regenerates the default config.ini file. Use this in case something happened to your old one. this in case something happened to your old one.">Regenerate
+          Config.ini</button>
+      </span>
+    </div>
+
+
+    <!-- Modal for Saving. It's in the form so it can trigger on the submit button -->
+    {{ make_modal("saveRestartModal","Save Changes",
                       "This will save your changes and restart the Ellen server.",
                       "Save and Restart", "submit_form()") }}
-    
-    </form>
-      
-    <!-- Modal for Restart -->
-    {{ make_modal("restartModal", "Restart Server?",
-     "This will restart the Ellen server. <strong>Your changes will not be saved.</strong>",
-     "Restart", "newconfig()", "warning") }}
 
-     <!-- Modal for Regenerating Config.ini -->
-     {{ make_modal("regenerateModal", "Regenerate Config.ini?",
+  </form>
+
+  <!-- Modal for Restart -->
+  {{ make_modal("restartModal", "Restart Server?",
+     "This will restart the Ellen server. <strong>Your changes will not be saved.</strong>",
+     "Restart", "reload()", "warning") }}
+
+  <!-- Modal for Regenerating Config.ini -->
+  {{ make_modal("regenerateModal", "Regenerate Config.ini?",
      "This will regenerate the default config.ini file. <strong>This will overwrite any existing config.ini file and you will lose your current settings.</strong>",
-     "Regenerate", "reload()", "danger") }}
+     "Regenerate", "newconfig()", "danger") }}
 
 </div>
 {% endblock content %}

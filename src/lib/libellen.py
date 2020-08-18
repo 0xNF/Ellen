@@ -62,7 +62,7 @@ def read_config() -> Config:
     except:
         return None
 
-def write_default_config() -> Config:
+def write_default_config() -> bool:
     """ creates a default Config.ini at the regular path and returns the config object """
     conf = configparser.ConfigParser()
     conf["MAINTENANCE"] = {
@@ -84,7 +84,32 @@ def write_default_config() -> Config:
     }
     with open("./config.ini", 'w') as f:
         conf.write(f)
-    return conf
+    return True
+
+def write_custom_config(config: Config) -> bool:
+    """ Given a new config object, writes it to disk and reloads it via apply_config """
+    conf = configparser.ConfigParser()
+    conf["MAINTENANCE"] = {
+        "MaxKeepDays": config.MAX_KEEP_DAYS,
+        "MaxRecordCount": config.MAX_RECORD_COUNT,
+        "MaxDbSize": config.MAX_SIZE,
+    }
+    conf["SAVE"] = {
+        "StoreImageKind": config.STORE_IMAGE_KIND,
+        "StoreImage": config.STORE_IMAGE,
+        "StoreFullJson": config.STORE_FULL_JSON,
+        "DataDirectory": config.SAVE_PATH,
+        "OutputDirectory": config.OUTPUT_PATH,
+        "Kind": config.KIND,
+        "Timezone": config.TIMEZONE
+    }
+    conf["SERVER"] = {
+        "Port": config.PORT,
+    }
+    with open("./config.ini", 'w') as f:
+        conf.write(f)
+    apply_config(config)
+    return True
 
 
 def InitBackingStore():
@@ -112,7 +137,7 @@ def SetActiveStore():
         update_ivar = update_ivar_sql
         set_config = set_config_sql
     else:
-        raise Exception("Backing store must be oneof 'XLS', 'SQL'")
+        raise AttributeError("Backing store must be oneof 'XLS', 'SQL'")
     set_config(CONFIG)
     return
 

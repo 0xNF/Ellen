@@ -1,7 +1,8 @@
-import sys
+import sys, os
 from flask import Flask, session, request, render_template
 import json
 from lib import libellen
+from lib import libellen_core
 from datetime import datetime, timedelta, timezone
 
 last_ran = datetime.now()
@@ -16,7 +17,12 @@ def setup():
         if not conf:
             print("Failed to load config.ini, shutting down")
             sys.exit(-1)
-    libellen.apply_config(conf)
+    try:
+        libellen.apply_config(conf)
+    except AttributeError:
+        print("Config file was corrupted. Regenerting a new default config.ini")
+        libellen.write_default_config()
+        conf = libellen.read_config()
     print("Using the following config settings:")
     print(conf.__dict__)
     return
@@ -39,15 +45,38 @@ def validate_format(obj) -> bool:
         return False
     return True
 
-def validate_management(obj) -> bool:
+def validate_management(obj) -> libellen_core.Config:
     """ Given a json post to the Management endpoint, validate its format """
-    if obj is None or obj is not isinstance(obj, dict):
-        return False
-    # nf todo - validate the config format
-    d = {
-        ""
-    }
-    return True
+    if obj is None:
+        return None
+    try:
+        serverOn = obj["serverOn"] == "on"
+        PORT = int(obj["serverPort"])
+        MAX_KEEP_DAYS = int(obj["maxkeepdays"])
+        MAX_RECORD_COUNT = int(obj["maxrecordcount"])
+        MAX_DB_SIZE = int(obj["maxdbsize"])
+        KIND = obj["kind"].upper()
+        try:
+            # NF TODO - this, along with STORE_FULL_JSON are because bootstrap4-toggle doesnt send data if checked isnt true.
+            STORE_IMAGE = obj["storeimage"].lower() == "on"
+        except:
+            STORE_IMAGE = False
+        STORE_IMAGE_KIND = obj["storeimagekind"].upper()
+        try:
+            STORE_FULL_JSON = obj["storefulljson"].lower() == "on"
+        except:
+            STORE_FULL_JSON = False
+        TIMEZONE = obj["timezone"].upper()
+        OUTPUT_DIR = obj["outputdirectory"]
+
+        config: libellen_core = libellen_core.Config(STORE_FULL_JSON, STORE_IMAGE,
+            STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT,
+            MAX_KEEP_DAYS, libellen.CONFIG.SAVE_PATH, OUTPUT_DIR, KIND, PORT,
+            TIMEZONE)
+        return config
+    except:
+        return None
+    return None
     
 
 @app.route('/savegorilla', methods=["POST"])
@@ -95,13 +124,13 @@ def mainpage():
 @app.route("/manage/updateconfig", methods=["POST"])
 def post_config():
     """ Receives new config data from the Save button """
-    j = request.json
     res = {}
-    if not validate_management(j):
+    conf = validate_management(request.form)
+    if not conf:
         res["error"] = "received post data wasn't a valid Management Endpoint formatted JSON object"
         return res, 400
-    
-    return ''
+    libellen.write_custom_config(conf)
+    return 'Updated config settings', 200
 
 @app.route("/manage/newconfig", methods=["POST"])
 def regenerate_config():
@@ -112,17 +141,17 @@ def regenerate_config():
         print("No pre-existing config.ini found. Continuing.")
     libellen.write_default_config()
     setup()
-    res = {"message": "Successfully regenerated new config.ini file"}
+    res = "Successfully regenerated new config.ini file"
     return res, 200
 
-@app.route('/manage/reload', methods=["GET"])
+@app.route('/manage/reload', methods=["POST"])
 def relod():
     """ re-reads the config.ini and reloads its settings """
     try:
         setup()
-        return {"message": "Successfullt reloaded config options"}
+        return "Successfully reloaded config options"
     except Exception as e:
-        return {"error": str(e)}, 500
+        return str(e), 500
 
 # setup will always run, either through invocation via `Flask run` or from direct `main.
 # in case of `Flask run`, server port will be ignored and will always be `5000`. For custom port,

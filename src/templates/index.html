@@ -10,7 +10,6 @@
             data: $('#configform').serialize(),
             success: function(data, status, xhr){
                 showBanner("success", "Config Update Success", data);
-                // Whatever you want to do after the form is successfully submitted
             },
             error: function(xhr, status, err) {
                 showBanner("danger", "Config Update Error", err);
@@ -29,18 +28,7 @@
     }
 </script>
 
-
-{% macro banner(alert_type, title, msg)%}
-<div id="banner_alert" class="alert {{alert_type}} alert-dismissible fade" role="alert">
-  <strong id="banner_title">{{ title }}</strong>
-  <div id="banner_message">{{ msg }}</div>
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-{% endmacro %}
-
-{% macro modal(id, title, msg, submitmsg, submitfunc)%}
+{% macro make_modal(id, title, msg, submitmsg, submitfunc)%}
 <div class="modal fade" id="{{id}}" name="{{id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{id}}" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -62,6 +50,7 @@
 </div>
 {% endmacro %}
 
+<!-- banner for status messages. Not displayed by default. -->
 <div id="banner_alert" class="alert alert-dismissible fade" role="alert">
     <strong id="banner_title">No Config File Found!</strong>
     <div id="banner_message">No config file was found while loading Ellen. A replacement, default <strong>config.ini</strong> file has been generated for you.</div>
@@ -73,8 +62,6 @@
 <div class="container">
     <h1>Ellen - Manage Settings</h1>
     <p class="lead">Settings related to how Ellen runs and saves IVAR data.</p>
-
-
 
     {% if not config %}
         <!-- No config data was found. -->
@@ -141,9 +128,9 @@
         <div class="form-group row" title="Whether to save Image data. If on, Image data will be placed in each row of the Excel file, or encoded as b64 data in the SQL file. Default: On. This coresponds to the 'storeimage' option in config.ini">
             <label for="storeimage" class="col-sm-2 col-form-label">Save Image</label>
             <div class="col-sm-2">
-              <input id="storeimage" name="storeimage" type="checkbox" checked data-toggle="toggle"
-               data-onstyle="outline-success" data-size="xs" 
-               {% if not config.STORE_IMAGE %} off="off"{% endif %}>
+              <input id="storeimage" name="storeimage" type="checkbox" data-toggle="toggle"
+               data-onstyle="outline-success" data-size="xs"
+               {% if config.STORE_IMAGE %} checked="checked" {% endif %}>
             </div>
         </div>
 
@@ -162,9 +149,9 @@
         <div class="form-group row" title="Gorilla sends a detailed JSON object to each registered subscription endpoint. This JSON object contains lots of extra useful data, but is very large. Enabling this option can have negative performance implications and the output file size can grow large very quickly. We do not recommend enabling this option. Default: Off. This coresponds to the 'storefulljson' option in config.ini">
             <label for="storefulljson" class="col-sm-2 col-form-label">Save Full Gorilla Object</label>
             <div class="col-sm-2">
-              <input id="storefulljson" name="storefulljson" type="checkbox" checked data-toggle="toggle" data-onstyle="outline-success" 
+              <input id="storefulljson" name="storefulljson" type="checkbox" data-toggle="toggle" data-onstyle="outline-success" 
               data-size="xs" 
-              {% if not config.STORE_FULL_JSON %} off="off"{% endif %}>
+              {% if config.STORE_FULL_JSON %} checked="checked" {% endif %}>
             </div>
         </div>
 
@@ -199,69 +186,22 @@
         </div>
 
 
-        <div class="modal fade" id="saveRestartModal" name="saveRestartModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel" name="exampleModalLabel">Save Changes?</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  This will save your changes and restart the Ellen server.
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" onclick="submit_form()" data-dismiss="modal" class="btn btn-primary">Save and Restart</button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <!-- Modal for Saving. It's in the form so it can trigger on the submit button -->
+        {{ make_modal("saveRestartModal","Save Changes",
+                      "This will save your changes and restart the Ellen server.",
+                      "Save and Restart", "submit_form()") }}
     
     </form>
       
-    <div class="modal fade" id="restartModal" name="restartModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel" name="exampleModalLabel">Restart Server?</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              This will restart the Ellen server. <strong>Your changes will not be saved.</strong>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Restart</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Modal for Restart -->
+    {{ make_modal("restartModal", "Restart Server?",
+     "This will restart the Ellen server. <strong>Your changes will not be saved.</strong>",
+     "Restart") }}
 
-      
-    <div class="modal fade" id="regenerateModal" name="regenerateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel" name="exampleModalLabel">Regenerate Config.ini?</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              This will regenerate the default config.ini file. <strong>This will overwrite any existing config.ini file and you will lose your current settings.</strong>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-danger" data-dismiss="modal">Regenerate</button>
-            </div>
-          </div>
-        </div>
-      </div>
+     <!-- Modal for Regenerating Config.ini -->
+     {{ make_modal("regenerateModal", "Regenerate Config.ini?",
+     "This will regenerate the default config.ini file. <strong>This will overwrite any existing config.ini file and you will lose your current settings.</strong>",
+     "Regenerate") }}
 
-   
 </div>
 {% endblock content %}

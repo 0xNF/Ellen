@@ -17,6 +17,33 @@
         });
     }
 
+    function newconfig() {
+      $.ajax({
+            url: "manage/newconfig",
+            type: 'post',
+            success: function(data, status, xhr) {
+                location.reload()
+                showBanner("success", "Config Regernated Successfully", data);
+            },
+            error: function(xhr, status, err) {
+                showBanner("danger", "Config Regeneration Error", err);
+            }
+        });
+    }
+
+    function reload() {
+      $.ajax({
+            url: "manage/reload",
+            type: 'post',
+            success: function(data, status, xhr){
+                showBanner("success", "Server Reloaded Successfully", data);
+            },
+            error: function(xhr, status, err) {
+                showBanner("danger", "Server Reload Error", err);
+            }
+        });
+    }
+
     function showBanner(logLevel, title, message) {
         document.body.scrollTop = 0; // For Safari
         document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
@@ -28,7 +55,7 @@
     }
 </script>
 
-{% macro make_modal(id, title, msg, submitmsg, submitfunc)%}
+{% macro make_modal(id, title, msg, submitmsg, submitfunc, logLevel="")%}
 <div class="modal fade" id="{{id}}" name="{{id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{id}}" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -43,7 +70,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" onclick="{{submitfunc}}" data-dismiss="modal" class="btn btn-primary">{{ submitmsg }}</button>
+        <button type="button" onclick="{{submitfunc}}" data-dismiss="modal" class="btn btn-primary {{'btn-'+logLevel if logLevel else ''}}">{{ submitmsg }}</button>
       </div>
     </div>
   </div>
@@ -181,7 +208,7 @@
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#restartModal" title="Restarts the server without saving any settings">Restart</button>
             </span>
             <span class="col-sm-2 offset-2">
-                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#regenerateModal" title="Regenerates the default config.ini file. Use this in case something happened to your old one. this in case something happened to your old one.">Regenerate Config.ini</button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#regenerateModal" title="Regenerates the default config.ini file. Use this in case something happened to your old one. this in case something happened to your old one.">Regenerate Config.ini</button>
             </span>
         </div>
 
@@ -196,12 +223,12 @@
     <!-- Modal for Restart -->
     {{ make_modal("restartModal", "Restart Server?",
      "This will restart the Ellen server. <strong>Your changes will not be saved.</strong>",
-     "Restart") }}
+     "Restart", "newconfig()", "warning") }}
 
      <!-- Modal for Regenerating Config.ini -->
      {{ make_modal("regenerateModal", "Regenerate Config.ini?",
      "This will regenerate the default config.ini file. <strong>This will overwrite any existing config.ini file and you will lose your current settings.</strong>",
-     "Regenerate") }}
+     "Regenerate", "reload()", "danger") }}
 
 </div>
 {% endblock content %}

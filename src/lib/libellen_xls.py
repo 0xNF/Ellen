@@ -94,7 +94,6 @@ def _get_image_path(img: GImage, gid: str) -> str:
     """ returns the path on disk for where to save a GImage """
     return  os.path.join(_CONFIG.SAVE_PATH, "img", f"{gid}.{img.Ext.lower()}")
 
-
 def _dump_and_resize_image(path: str, b64: str, square_size_px: int) -> Image:
     """ takes b64 encoded image data, and saves it to disk in the square dimensions supplied. Returns an openpyxl Image """
     dump_b64_img_to_file(img.B64, path)

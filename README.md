@@ -1,3 +1,6 @@
+![Master Branch Build](https://github.com/0xNF/Ellen/workflows/CreateMasterRelease/badge.svg)
+![Dev Branch Build](https://github.com/0xNF/Ellen/workflows/BuildDev/badge.svg?branch=dev)
+
 # Ellen
 
 This project is a webserver that receives events from Gorilla IVAR into either an `.xlsx` excel file or a `.sqlite` Sqlite Database.
@@ -19,7 +22,7 @@ build single file exe:
 we take `$ellen_source` to be the top-level ellen directory.
 ```
 cd $ellen_source
-pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib" ellen
+pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib" -n ellen
 ```
 omitting the `--hidden-import` flag will cause errors.
 

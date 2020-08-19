@@ -64,6 +64,7 @@
   }
 
   function showBanner(logLevel, title, message) {
+    $("#banner_alert").removeClass("d-none");
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
     $("#banner_alert").removeClass("alert-warning alert-danger alert-success alert-primary alert-secondary")
@@ -101,7 +102,7 @@
 {% endmacro %}
 
 <!-- banner for status messages. Not displayed by default. -->
-<div id="banner_alert" class="alert alert-dismissible fade" role="alert">
+<div id="banner_alert" class="alert alert-dismissible fade d-none" role="alert">
   <div>
     <sub id="banner_timestamp">Timestamp</sub>
   </div>

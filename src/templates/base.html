@@ -5,13 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="{{ url_for('static', filename='img/Gravio Logo.svg') }}">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap4-toggle.min.css') }}">
     <!-- Ellen CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ellen.css') }}">
 
-        <!-- Optional JavaScript -->
+    <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js') }}"></script>
 
@@ -25,11 +26,16 @@
 </head>
 
 <body>
+    <span class="header_banner">
+        <a href="https://gravio.com">
+            <img src="{{ url_for('static', filename='img/Gravio Logo.svg') }}"/>
+        </a>
+    </span>
   {% block content %}{% endblock %}
-
-
   <footer>
-      (c) ayy lmao technologies
+      &copy; 2020 Asteria Corporation<br/>
+      Made for <a href="https://gravio.com">Gravio</a>. Available on <a href="https://github.com/0xnf/ellen"><img style="vertical-align: none;" width="48" height="12" src="{{ url_for('static', filename='img/GitHub_Logo.png') }}"/></a>
+      
   </footer>
 
   <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>

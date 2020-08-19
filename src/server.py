@@ -50,24 +50,72 @@ def validate_management(obj) -> libellen_core.Config:
     if obj is None:
         return None
     try:
-        serverOn = obj["serverOn"] == "on"
-        PORT = int(obj["serverPort"])
-        MAX_KEEP_DAYS = int(obj["maxkeepdays"])
-        MAX_RECORD_COUNT = int(obj["maxrecordcount"])
-        MAX_DB_SIZE = int(obj["maxdbsize"])
-        KIND = obj["kind"].upper()
+        try:
+            serverOn = obj["serverOn"] == "on"
+        except:
+            serverOn = True
+            print(f"serverOn not found - setting to {serverOn}")
+
+        try:
+            PORT = int(obj["serverPort"])
+        except:
+            PORT = 5000
+            print(f"serverPort not found - setting to {PORT}")
+
+        try:
+            MAX_KEEP_DAYS = int(obj["maxkeepdays"])
+        except:
+            MAX_KEEP_DAYS = 30
+            print(f"maxkeepdays not found - setting to {MAX_KEEP_DAYS}")
+
+        try:
+            MAX_RECORD_COUNT = int(obj["maxrecordcount"])
+        except:
+            MAX_RECORD_COUNT = 10_000
+            print(f"maxrecordcount not found - setting to {MAX_RECORD_COUNT}")
+
+        try:
+            MAX_DB_SIZE = int(obj["maxdbsize"])
+        except:
+            MAX_DB_SIZE = 100
+            print(f"maxdbsize not found - setting to {MAX_DB_SIZE}")
+
+        try:
+            KIND = obj["kind"].upper()
+        except:
+            KIND = "XLS"
+            print(f"kind not found - setting to {KIND}")
+
         try:
             # NF TODO - this, along with STORE_FULL_JSON are because bootstrap4-toggle doesnt send data if checked isnt true.
             STORE_IMAGE = obj["storeimage"].lower() == "on"
         except:
             STORE_IMAGE = False
-        STORE_IMAGE_KIND = obj["storeimagekind"].upper()
+            print(f"storeimage not found - setting to {STORE_IMAGE}")
+
+        try:
+            STORE_IMAGE_KIND = obj["storeimagekind"].upper()
+        except:
+            STORE_IMAGE_KIND = "FACE"
+            print(f"storeimagekind not found - setting to {STORE_IMAGE_KIND}")
+
         try:
             STORE_FULL_JSON = obj["storefulljson"].lower() == "on"
         except:
             STORE_FULL_JSON = False
-        TIMEZONE = obj["timezone"].upper()
-        OUTPUT_DIR = obj["outputdirectory"]
+            print(f"storefulljson not found - setting to {STORE_FULL_JSON}")
+
+        try:
+            TIMEZONE = obj["timezone"].upper()
+        except:
+            TIMEZONE = "Local"
+            print(f"timezone not found - setting to {TIMEZONE}")
+        
+        try:
+            OUTPUT_DIR = obj["outputdirectory"]
+        except:
+            OUTPUT_DIR = "./"
+            print(f"outputdirectory not found - setting to {OUTPUT_DIR}")
 
         config: libellen_core = libellen_core.Config(STORE_FULL_JSON, STORE_IMAGE,
             STORE_IMAGE_KIND, MAX_DB_SIZE, MAX_RECORD_COUNT,

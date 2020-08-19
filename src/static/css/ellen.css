@@ -30,3 +30,13 @@ body {
   button {
       width: 200px;
   }
+
+  footer {
+    text-align: center;
+  }
+
+  .header_banner {
+    text-align: center;
+    width: 100%;
+    display: inline-block;
+  }

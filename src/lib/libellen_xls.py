@@ -2,6 +2,7 @@ from typing import List, Set, Dict, Tuple, Optional
 import sys, os
 import json
 from datetime import datetime, time, timedelta
+from pathlib import Path
 import openpyxl
 from openpyxl.styles import NamedStyle
 from openpyxl.drawing.image import Image
@@ -25,9 +26,11 @@ def _open_workbook() -> bool:
      and assigned the workbook to the global _WORKBOOK.
      Will create the workbook at the XLSPATH if it does not exist."""
     global _WORKBOOK
-    if _WORKBOOK is not None:
-        return True # already loaded, therefore true
     xlsPath = _getXLSPath()
+    if _WORKBOOK is not None:
+        _WORKBOOK.close() # needed in case we replace the workbook at runtime via some outside source
+        _WORKBOOK = openpyxl.load_workbook(xlsPath)
+        return True # already loaded, therefore true
     p = os.path.dirname(xlsPath)
     os.makedirs(p, exist_ok=True)
     try:
@@ -195,47 +198,63 @@ def set_config(config: Config):
     _CONFIG = config
     return
 
-def prune_old_data() -> int:
+def prune_old_data() -> str:
     """ removes old data according to the Config Rules. 
-    Returns the number of rows deleted. """
+        If any pruning needs to happen, the file gets rolled over into one with the format of
+        Ellen_YYYY_mm_DD.count.xlsx 
+        
+        returns the name of the rolled over file if exists, or None if it didnt rollover"""
     _ensure_workbook()
     _open_workbook()
     sheet = _WORKBOOK.get_sheet_by_name(_SHEET_IVAR)
     rowcount = sheet.max_row
-    max_col = openpyxl.utils.get_column_letter(sheet.max_column) # 7 -> G
-    img_col = openpyxl.utils.get_column_letter(6) # images are the 6th slot item
+    rollover = False
 
-    deleted = 0
-    # check for number of rows beyond max row count
+    # check that the file has at least 2 rows. One for header, one for first data
+    if rowcount < 2:
+        return None
+    
+    # check if MAX_RECORDS has been exceeded
     excess_rows = rowcount - _CONFIG.MAX_RECORD_COUNT -1 # -1 because we want to be mindful of the header row
     if excess_rows > 0:
-        delete_and_shift_rows(sheet, rowcount, excess_rows, max_col, img_col)
-        rowcount -= excess_rows
-        deleted += excess_rows
-
-    # check for items older than max keep days
-    # nb this only works for sheets that haven't been re-sorted
+        print(f"Current file has exceeded the configured rowcount. Max: {_CONFIG.MAX_RECORD_COUNT}, Got: {rowcount}")
+        rollover = True
+    
+    # check if first data row has exceeded MAX_KEEP_DAYS
     max_date = datetime.now() - timedelta(days=_CONFIG.MAX_KEEP_DAYS)
-    delete_this_amount = 0
-    for i,row in enumerate(sheet.iter_rows()):
-        rval = row[1].value
-        if isinstance(rval, datetime) and rval <= max_date:
-            delete_this_amount += 1
-    if delete_this_amount > 0:
-        delete_and_shift_rows(sheet, rowcount, delete_this_amount, max_col, img_col) 
-        deleted += delete_this_amount
-    _save_workbook()
-    return deleted
+    earliest_entry = sheet[2][1].value
+    if earliest_entry <= max_date:
+        print(f"Current file had records which exceed the configured Keep Day limit: Max Keep Days: {_CONFIG.MAX_KEEP_DAYS}, earliest record: {(datetime.now() - earliest_entry).days} ago ({earliest_entry.strftime('%Y-%m-%d')})")
+        rollover = True
 
-def delete_and_shift_rows(sheet: openpyxl.worksheet.worksheet, rowcount: int, excess_rows: int, max_col: str, img_col: str):
-    # start_row = 1 + 1 + excess_rows # 1(skip header) + 1 (one up from the last known excess row) + ex (the excess count)
-    # shift = (rowcount - start_row + 1)*-1 # +1 is skip header, *-1 is to move up, not down.
-    # sheet.move_range(f"A{start_row}:{max_col}{rowcount}", shift) 
-    # anchors = list(openpyxl.utils.cols_from_range(f"{img_col}2:{img_col}{(-1*shift)+1}"))
-    # anchors = [x for y in anchors for x in y] # flatten
-    # _delete_images_with_anchors(sheet._images, anchors)
-    # _shift_images(sheet._images, shift)
-    return
+    # check if MAX_SIZE has been exceeded
+    max_bytes = int(_CONFIG.MAX_SIZE * 1e6)
+    fsize = os.path.getsize(_getXLSPath())
+    if fsize > max_bytes:
+        print(f"Current file has exceeded the configured MAX_SIZE: Configured size: {_CONFIG.MAX_SIZE}, file size: {fsize}")
+        rollover = True
+
+    # perform the rename and rollover
+    # NF TODO
+    if rollover:
+        name = _rollover()
+        print(f"The prevous ellen.xlsx file has been rolled over. It is available under the filename {name}")
+        return name
+
+    return None
+
+def _rollover() -> str:
+    """ moves the current ellen.xlsx to a rolled over 'Ellen-YYYY-dd-MM.c.xlsx' file.
+    Returns the name of the rolled over file
+    """
+    _WORKBOOK.close() # ensure that the file lock is released
+    today = datetime.now()
+    new_fname_first = f"ellen-{today.strftime('%Y-%m-%d')}"
+    fpath = Path(_getXLSPath())
+    num_others = len([x for x in os.listdir(_CONFIG.OUTPUT_PATH) if x.startswith(new_fname_first)])+1
+    new_fname = f"{new_fname_first}.{num_others}.xlsx"
+    fpath.rename(os.path.join(os.path.dirname(fpath), new_fname))
+    return new_fname
 
 def main():
     print("lib_elen_XLS:")

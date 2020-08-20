@@ -37,6 +37,6 @@ jobs:
     - name: Packaging
       run: |
         pip install pyinstaller
-        pyinstaller --onefile .\src\server.py --hidden-import=pkg_resources.py2_warn --add-data "./src/lib;lib" -n ellen
+        pyinstaller --onefile ./ellen.spec
         compress-archive -path ./dist/ellen.exe, ./config.ini -destinationpath "ellen.zip"
 

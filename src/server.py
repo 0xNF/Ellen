@@ -5,8 +5,16 @@ from lib import libellen
 from lib import libellen_core
 from datetime import datetime, timedelta, timezone
 
+# flask/pyinstaller stuff
+# https://stackoverflow.com/questions/32149892/flask-application-built-using-pyinstaller-not-rendering-index-html
+base_dir = '.'
+if hasattr(sys, '_MEIPASS'):
+    base_dir = os.path.join(sys._MEIPASS)
+
 last_ran = datetime.now()
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder=os.path.join(base_dir, 'static'),
+            template_folder=os.path.join(base_dir, 'templates'))
 
 def setup():
     """ initializes Ellen by grabbing configs and ensuring initial files """
